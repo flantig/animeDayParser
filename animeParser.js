@@ -18,16 +18,20 @@ const login = new snoowrap({
 
 client.on('message', msg => {
     const prefix = ">"
-    let counter = 0;
+    let selectedHighestVoted = false;
     switch(msg.content){
+
         case prefix + "today":
             const subreddit = login.getSubreddit('AnimeCalendar');
+
             subreddit.getHot({time: 'day', limit: 10}).forEach((post) => {
-                if(post.title.includes(today.toString()) && counter === 0){
+                if(post.title.includes(today.toString()) && !selectedHighestVoted){
                     msg.channel.send(post.url);
-                    counter++;
+                    selectedHighestVoted = true;
                 }
             });
+
+            selectedHighestVoted = false;
 
     }
 })
