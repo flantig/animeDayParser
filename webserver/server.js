@@ -23,6 +23,6 @@ const requestListener = async function (req, res) {
 };
 
 const server = http.createServer(requestListener);
-server.listen(port, host, () => {
+server.listen(host, () => {
     console.log(`Server is running on http://${host}:${port}`);
 });
