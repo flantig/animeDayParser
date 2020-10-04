@@ -1,4 +1,22 @@
+const snoowrap = require('snoowrap');
+const config = require('./config');
+
 module.exports = {
+    /**
+     * Function to create a new snoowrap object that will use the credentials stored in config.js to create a reference
+     * to a particular subreddit: determined by the subreddit name in the input variable. You can ask a maintainer for
+     * a skeleton of this config file.
+     * @param   subName         The name of the subreddit that a reference will be created to.
+     * @returns {Subreddit}     snoowrap subreddit object.
+     */
+    getSubredditReference: async (subName) => {
+        return new snoowrap({
+            userAgent: config.userAgent,
+            clientId: config.clientId,
+            clientSecret: config.clientSecret,
+            refreshToken: config.refreshToken
+        }).getSubreddit(subName);
+    },
     /**
      * This function will take the hot posts of a subreddit and return post objects from it. Based on the input params,
      * the function that return either one single post or multiple post objects.

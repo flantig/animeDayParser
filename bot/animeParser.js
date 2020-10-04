@@ -1,23 +1,19 @@
-const config = require('../config.json');
-const snoowrap = require('snoowrap');
-const fetch = require("node-fetch");
 const {DateTime} = require("luxon");
-const fs = require('fs');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const config = require('../config');
 const sharedFunc = require("../sharedFunc");
 
-const login = new snoowrap({
-    userAgent: config.userAgent,
-    clientId: config.clientId,
-    clientSecret: config.clientSecret,
-    refreshToken: config.refreshToken
-});
+let subreddit;
 
-const subreddit = login.getSubreddit('AnimeCalendar');
-
-client.on('ready', x => {
-    console.log("i'm lit on " + client.guilds.cache.size + " servers.")
+/**
+ * Client listener that runs exactly one (1) time when the bot first starts. Anything that needs to be ran to set up
+ * bot functionality should be run in this function. Currently it is used to signal in console that the bot has started
+ * and the create the reference to the AnimeCalendar subreddit.
+ */
+client.on('ready', async x => {
+    console.log("i'm lit on " + client.guilds.cache.size + " servers.");
+    subreddit = await sharedFunc.getSubredditReference("AnimeCalendar");
 });
 
 /**
@@ -35,7 +31,7 @@ client.on('message', async msg => {
 
     switch (msg.content) {
         case config.prefix + "today":
-            let post = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today,false);
+            let post = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, false);
             msg.channel.send(post.url);
             break;
 
