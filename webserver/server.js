@@ -1,14 +1,20 @@
 const http = require("http");
 const host = 'localhost';
 const port = 8000;
-const {placeholder} = require("./routes");
+const {today, todayAll} = require("./routes");
+const sharedFunc = require("../sharedFunc");
 
-const requestListener = function (req, res) {
+const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
+    let subReddit = await sharedFunc.getSubredditReference("AnimeCalendar");
     switch (req.url) {
-        case "/placeholder":
+        case "/today":
             res.writeHead(200);
-            res.end(placeholder);
+            res.end(await today(subReddit));
+            break;
+        case "/todayAll":
+            res.writeHead(200);
+            res.end(await todayAll(subReddit));
             break;
         default:
             res.end(`{"message": "This is where the image link goes"}`);

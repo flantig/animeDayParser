@@ -37,7 +37,7 @@ client.on('message', async msg => {
 
         case config.prefix + "todayAll":
             let posts = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, true);
-            msg.channel.send(sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
+            msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
             break;
     }
 });
