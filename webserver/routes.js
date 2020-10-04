@@ -3,15 +3,15 @@ const {DateTime} = require("luxon");
 
 module.exports = {
     today:
-        async (subreddit, counter = 0, selectedHighestVoted = false, today = DateTime.local().day) => {
-            let post = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, false);
+        async (subreddit) => {
+            let post = await sharedFunc.getImgUrl(subreddit,false);
             return JSON.stringify([{
                 todayAnime: post.url.toString(),
                 postTitle: post.title
             }])
         },
-    todayAll: async (subreddit, counter = 0, selectedHighestVoted = false, today = DateTime.local().day) => {
-        let posts = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, true);
+    todayAll: async (subreddit) => {
+        let posts = await sharedFunc.getImgUrl(subreddit,true);
         return JSON.stringify({
             posts: posts.map(post => {
                 return {

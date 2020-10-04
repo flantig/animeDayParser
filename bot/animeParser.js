@@ -1,4 +1,3 @@
-const {DateTime} = require("luxon");
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('../config');
@@ -25,18 +24,14 @@ client.on('ready', async x => {
  * @case config.prefix + "todayAll": It posts absolutely every post matching today's date. If it doesn't it runs the checks above.
  */
 client.on('message', async msg => {
-    let selectedHighestVoted = false;
-    let counter = 0;
-    let today = DateTime.local().day;
-
     switch (msg.content) {
         case config.prefix + "today":
-            let post = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, false);
+            let post = await sharedFunc.getImgUrl(subreddit,false);
             msg.channel.send(post.url);
             break;
 
         case config.prefix + "todayAll":
-            let posts = await sharedFunc.getImgUrl(subreddit, selectedHighestVoted, counter, today, true);
+            let posts = await sharedFunc.getImgUrl(subreddit,true);
             msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
             break;
     }

@@ -1,5 +1,6 @@
 const snoowrap = require('snoowrap');
 const config = require('./config');
+const {DateTime} = require("luxon");
 
 module.exports = {
     /**
@@ -21,13 +22,13 @@ module.exports = {
      * This function will take the hot posts of a subreddit and return post objects from it. Based on the input params,
      * the function that return either one single post or multiple post objects.
      * @param subreddit             The designated subreddit defined in calling file.
+     * @param grabAll               Boolean used to determine whether or not to return a single post or array of posts.
      * @param selectedHighestVoted  Boolean to determine whether the top post is selected. Default: false
      * @param counter               I honestly have no clue what this is for, ask Franklin.
      * @param today                 The current date.
-     * @param grabAll               Boolean used to determine whether or not to return a single post or array of posts.
      * @returns {Promise<{}|[]>}    If grabAll=true, will send an array of post objects, else a single post object.
      */
-    getImgUrl: async (subreddit, selectedHighestVoted, counter, today, grabAll) => {
+    getImgUrl: async (subreddit, grabAll, selectedHighestVoted = false, counter = 0, today = DateTime.local().day) => {
         let returnVal = {};
         let returnVals = [];
         await subreddit.getHot({time: 'day', limit: 10}).forEach((post) => {
