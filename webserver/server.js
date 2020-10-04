@@ -1,6 +1,6 @@
 const http = require("http");
 const host = 'animetodayme.me';
-const port = 80;
+const port = 8000;
 const {today, todayAll, defaultPage} = require("./routes");
 const sharedFunc = require("../sharedFunc");
 
