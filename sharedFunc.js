@@ -38,7 +38,7 @@ module.exports = {
      * @param timeout       The time allotted for the reaction collector to collect reactions. defaulted to 120000ms
      * @returns Message     Returns a discord message which is continually edited as the collector picks up reactions.
      */
-    paginationEmbed: async function (msg, pages, emojiList = ['⏪', '⏩'], timeout = 120000) {
+    paginationEmbed: async (msg, pages, emojiList = ['⏪', '⏩'], timeout = 120000) => {
         if (!msg && !msg.channel) throw new Error('Channel is inaccessible.');
         if (!pages) throw new Error('Pages are not given.');
         if (emojiList.length !== 2) throw new Error('Need two emojis.');
