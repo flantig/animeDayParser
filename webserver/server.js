@@ -1,7 +1,7 @@
 const http = require("http");
-const host = 'localhost';
+const host = 'animetodayme.me';
 const port = 8000;
-const {today, todayAll} = require("./routes");
+const {today, todayAll, defaultPage} = require("./routes");
 const sharedFunc = require("../sharedFunc");
 
 const requestListener = async function (req, res) {
@@ -17,7 +17,8 @@ const requestListener = async function (req, res) {
             res.end(await todayAll(subReddit));
             break;
         default:
-            res.end(`{"message": "This is where the image link goes"}`);
+            res.writeHead(200);
+            res.end(await defaultPage());
     }
 };
 
