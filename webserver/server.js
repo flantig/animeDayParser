@@ -23,4 +23,4 @@ const requestListener = async function (req, res) {
 };
 
 const server = http.createServer(requestListener);
-server.listen(port)
+server.listen(port, () => {console.log("serving on port: " + port)})
