@@ -6,13 +6,16 @@ module.exports = {
         async (subreddit) => {
             let post = await sharedFunc.getImgUrl(subreddit,false);
             if(post){
-
+                return JSON.stringify([{
+                    imgUrl: post.url.toString(),
+                    postTitle: post.title
+                }])
             }
             else {
-                return JSON.stringify({
+                return JSON.stringify([{
                     imgUrl: "No Image Yet",
                     postTitle: "No Image Yet"
-                })
+                }])
             }
 
         },
