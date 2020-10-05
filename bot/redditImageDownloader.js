@@ -48,12 +48,22 @@ async function downloader() {
     let posts = await sharedFunc.getAxios(start, end);
     let temp;
 
+    console.log("Success");
+    console.log(year);
+
     while (year > 0) {
         await sleep(1500);
         start = end;
         end = end + 864000;
         year = year - 10;
 
+        console.log(DateTime.fromSeconds(start).toLocaleString({
+            month: 'short',
+            day: '2-digit'
+        }) + " to " + DateTime.fromSeconds(end).toLocaleString({
+            month: 'short',
+            day: '2-digit'
+        }));
 
         try {
             temp = await sharedFunc.getAxios(start, end);
