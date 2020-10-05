@@ -49,6 +49,10 @@ module.exports = {
     },
 
     /**
+     *@ToDo: In redditImageDownloader.js you want to check what the last date in your loop is and increase the start and end date paramters by 5-10 days
+     *       using luxon until you either complete the month or the entire year. Month for testing most likely and year for the remainder. You also probably
+     *       want to actually download the damn images too since you spent a lot of time trying to trouble shoot a backtick/double quotes syntax error.
+     *
      *
      * @param UTCStringStart/UTCStringEnd: Luxon can parse UTC/UNIX time formats, and so the plan is to have a loop going backwards month per month until we
      * go back an entire year in redditImageDownloader.js while in sharedFunc.js it will go through the days.
