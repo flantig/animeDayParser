@@ -1,5 +1,5 @@
 const http = require("http");
-const host = 'animetodayme.me';
+// const host = 'animetodayme.me';
 const port = 8000;
 const {today, todayAll, defaultPage} = require("./routes");
 const sharedFunc = require("../sharedFunc");
@@ -23,6 +23,4 @@ const requestListener = async function (req, res) {
 };
 
 const server = http.createServer(requestListener);
-server.listen(port, host, () => {
-    console.log(`Server is running on http://${host}:${port}`);
-});
+server.listen(port, () => {console.log("serving on port: " + port)})
