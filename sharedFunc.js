@@ -69,6 +69,8 @@ module.exports = {
      * @Limitations: It seems like it can only load up 12 days at a time. I'm not sure why but if I had to guess, it's probably because they're trying not to get their
      * endpoint absolutely destroyed.
      *
+     * @if (current.url.match(/\.(jpeg|jpg|gif|png)$/)): This is a regex that makes sure the url is actually an image. I was running into a problem where the ide
+     * didn't like the file I was downloading. I guess this helps remove bloat files too.
      */
     getAxios: async (UTCStringStart, UTCStringEnd) => {
         let collecPosts = [];
@@ -76,12 +78,21 @@ module.exports = {
         const post = await axios.get(`https://api.pushshift.io/reddit/search/submission/?&after=${UTCStringStart}&before=${UTCStringEnd}&allow_videos=false&pretty&subreddit=AnimeCalendar`);
         try {
             for (let i = 0; i < post.data.data.length; i++) {
-                const formatted = DateTime.fromSeconds(post.data.data[i].created_utc).toLocaleString({month: 'short', day: '2-digit'});
-                collecPosts.push({
-                    "Date": formatted,
-                    "UTC": post.data.data[i].created_utc,
-                    "URL": post.data.data[i].url
-                })
+                let current = post.data.data[i];
+                const formatted = DateTime.fromSeconds(current.created_utc).toLocaleString({
+                    month: 'short',
+                    day: '2-digit'
+                });
+                if (current.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+                    collecPosts.push({
+                        "Date": formatted,
+                        "UTC": current.created_utc,
+                        "options": {
+                            "url": current.url,
+                            "dest": `C:/Users/Home/Desktop/Months/${DateTime.fromSeconds(current.created_utc).toLocaleString({month: 'long'})}/${formatted}/`
+                        }
+                    })
+                }
             }
         } catch (err) {
             console.error("Something's amiss...");
@@ -90,7 +101,7 @@ module.exports = {
             console.error("===================================================================================================");
         }
 
-        console.log("debug check")
+        //console.log("debug check")
         return collecPosts;
 
     },
