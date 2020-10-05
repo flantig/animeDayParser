@@ -5,10 +5,16 @@ module.exports = {
     today:
         async (subreddit) => {
             let post = await sharedFunc.getImgUrl(subreddit,false);
-            return JSON.stringify({
-                imgUrl: post.url.toString(),
-                postTitle: post.title
-            })
+            if(post){
+
+            }
+            else {
+                return JSON.stringify({
+                    imgUrl: "No Image Yet",
+                    postTitle: "No Image Yet"
+                })
+            }
+
         },
     todayAll: async (subreddit) => {
         let posts = await sharedFunc.getImgUrl(subreddit,true);
