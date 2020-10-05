@@ -1,6 +1,7 @@
 const snoowrap = require('snoowrap');
 const config = require('./config');
 const {DateTime} = require("luxon");
+const axios = require('axios').default;
 
 module.exports = {
     /**
@@ -45,6 +46,49 @@ module.exports = {
         } else {
             return returnVal
         }
+    },
+
+    /**
+     *
+     * @param UTCStringStart/UTCStringEnd: Luxon can parse UTC/UNIX time formats, and so the plan is to have a loop going backwards month per month until we
+     * go back an entire year in redditImageDownloader.js while in sharedFunc.js it will go through the days.
+     *
+     * @returns {Promise<[]>}: It should bring an array with jsons containing the following values:
+     *
+     *          Date - Date is going to be used to name folders, the format for it is LLLLMM (ex. August09)
+     *          UTC  - This is here in case I'll need to work with DateTime again and to more easily set a name for a general month folder
+     *          URL  - The actual url of the image that I'll use to download
+     *
+     *@if (DateTime.fromSeconds(post.data.data[i].created_utc).day === initialDate.day): This is a check to make sure we're on the same day as we go through through
+     * the data. If it isn't, we change
+     *
+     * @Limitations: It seems like it can only load up 12 days at a time. I'm not sure why but if I had to guess, it's probably because they're trying not to get their
+     * endpoint absolutely destroyed.
+     *
+     */
+    getAxios: async (UTCStringStart, UTCStringEnd) => {
+        let collecPosts = [];
+
+        const post = await axios.get(`https://api.pushshift.io/reddit/search/submission/?&after=${UTCStringStart}&before=${UTCStringEnd}&allow_videos=false&pretty&subreddit=AnimeCalendar`);
+        try {
+            for (let i = 0; i < post.data.data.length; i++) {
+                const formatted = DateTime.fromSeconds(post.data.data[i].created_utc).toLocaleString({month: 'short', day: '2-digit'});
+                collecPosts.push({
+                    "Date": formatted,
+                    "UTC": post.data.data[i].created_utc,
+                    "URL": post.data.data[i].url
+                })
+            }
+        } catch (err) {
+            console.error("Something's amiss...");
+            console.error(err);
+            console.error("===================================================================================================");
+            console.error("===================================================================================================");
+        }
+
+        console.log("debug check")
+        return collecPosts;
+
     },
     /**
      * This function takes in an array of discord embeds and displays them through dynamic pagination. This is done
