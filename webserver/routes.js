@@ -5,8 +5,7 @@ module.exports = {
     today:
         async (subreddit) => {
             let post = await sharedFunc.getImgUrl(subreddit,false);
-            console.log(post)
-            if(post){
+            if(post.url != undefined){
                 return JSON.stringify([{
                     imgUrl: post.url.toString(),
                     postTitle: post.title
