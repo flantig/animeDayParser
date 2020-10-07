@@ -54,6 +54,15 @@ client.on('message', async msg => {
                 msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
                 break;
             }
+        case config.prefix + "yesterday":
+                let yposts = await sharedFunc.getGoogle(DateTime.local().minus({ days: 1 }).toLocaleString({
+                    month: 'short',
+                    day: '2-digit'
+                }));
+                var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
+                msg.channel.send(randomIMG.url);
+                break;
+
     }
 });
 

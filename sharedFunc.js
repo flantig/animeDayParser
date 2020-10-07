@@ -128,7 +128,8 @@ module.exports = {
      * @parameter drive.files.list: This is essentially a search query built into the google drive api:
      *
      *      q: 'q' stands for query and you can search by all kinds of parameters relating to files in your google drive. It is advised you use
-     *      backticks so that you can just easily pass paramters into it.
+     *      backticks so that you can just easily pass paramters into it. Also note that I still put double quotes around ${id}, I spent nearly an entire
+     *      hour trying to figure that out.
      *
      *      pageSize: self explanatory but completely unnecesarry. There will technically never be an instance in which there are repeat day folders.
      *
