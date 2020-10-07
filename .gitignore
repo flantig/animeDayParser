@@ -4,3 +4,5 @@ node_modules/
 .idea/
 .idea/workspace.xml
 nginx.conf
+/googleAPI/credentials.json
+/googleAPI/credentials.json
