@@ -1,8 +1,18 @@
 const snoowrap = require('snoowrap');
 const config = require('./config');
 const {DateTime} = require("luxon");
-
 const axios = require('axios').default;
+const {google} = require('googleapis');
+const credentials = require('../googleAPI/credentials.json');
+
+const scopes = [
+    'https://www.googleapis.com/auth/drive'
+];
+const auth = new google.auth.JWT(
+    credentials.client_email, null,
+    credentials.private_key, scopes
+);
+const drive = google.drive({version: "v3", auth});
 
 module.exports = {
     /**
@@ -103,6 +113,32 @@ module.exports = {
         }
 
         //console.log("debug check")
+        return collecPosts;
+
+    },
+    getGoogle: async (monthDay) => {
+        const drive = await google.drive({version: 'v3', auth});
+        let res = await drive.files.list({
+            q: `name = "${monthDay}"`,
+            pageSize: 10,
+            fields: 'files(name, id)',
+            orderBy: 'createdTime desc'
+        });
+
+        const id = await res.data.files[0].id;
+
+        let dayFiles = await drive.files.list({
+            q: `"${id}" in parents`,
+            fields: 'files(name, webViewLink, webContentLink, id)',
+
+        })
+
+        let collecPosts = [];
+        for (let i = 0; i < dayFiles.data.files.length; i++) {
+            collecPosts.push(dayFiles.data.files[i].webContentLink.slice(0, -16));
+        }
+
+
         return collecPosts;
 
     },

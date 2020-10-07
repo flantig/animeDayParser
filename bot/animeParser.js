@@ -26,24 +26,31 @@ client.on('ready', async x => {
 client.on('message', async msg => {
     switch (msg.content) {
         case config.prefix + "today":
-            let post = await sharedFunc.getImgUrl(subreddit,false);
-            if(post.url != null) {
+            let post = await sharedFunc.getImgUrl(subreddit, false);
+            if (post.url != null) {
                 msg.channel.send(post.url);
                 break;
-            }else {
-                msg.channel.send("Uwaa~! I couldn't find an anirific day for you, sorry!");
-                msg.channel.send("https://i.imgur.com/FdZM8V1.gif");
+            } else {
+                let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
+                    month: 'short',
+                    day: '2-digit'
+                }));
+                var randomIMG = posts[Math.floor(Math.random() * posts.length)];
+                msg.channel.send(randomIMG.url);
                 break;
             }
 
         case config.prefix + "todayAll":
-            let posts = await sharedFunc.getImgUrl(subreddit,true);
-            if(post.url != null) {
+            let posts = await sharedFunc.getImgUrl(subreddit, true);
+            if (post.url != null) {
                 msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
                 break;
             } else {
-                msg.channel.send("Uwaa~! I couldn't find an anirific day for you, sorry!");
-                msg.channel.send("https://i.imgur.com/FdZM8V1.gif");
+                let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
+                    month: 'short',
+                    day: '2-digit'
+                }));
+                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
                 break;
             }
     }
