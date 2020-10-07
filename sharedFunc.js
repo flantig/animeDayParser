@@ -116,6 +116,27 @@ module.exports = {
         return collecPosts;
 
     },
+
+    /**
+     *
+     * @param monthDay: We pass in the shortened day format of month: 'short' and day: '2-digit' because that's how the folders are named. We use that to obtain
+     * the id of the folder in google drive to finally obtain the files within.
+     *
+     * @returns collecPosts: This is going to be an array of objects in the following format [ {title: monthDay, url: url} ]. The reason why we retain the title is
+     * for todayAll to match the parameters that anthony's bot requires.
+     *
+     * @parameter drive.files.list: This is essentially a search query built into the google drive api:
+     *
+     *      q: 'q' stands for query and you can search by all kinds of parameters relating to files in your google drive. It is advised you use
+     *      backticks so that you can just easily pass paramters into it.
+     *
+     *      pageSize: self explanatory but completely unnecesarry. There will technically never be an instance in which there are repeat day folders.
+     *
+     *      fields: this is the information that it returns back to you in the json file and it's super cool in which you can take only what you need. The
+     *      google docs api has a whole list of things you can take back
+     *
+     *      orderBy: some filter, ordering. Again, doesn't matter really.
+     */
     getGoogle: async (monthDay) => {
         const drive = await google.drive({version: 'v3', auth});
         let res = await drive.files.list({
