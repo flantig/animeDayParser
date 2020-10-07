@@ -3,7 +3,7 @@ const config = require('./config');
 const {DateTime} = require("luxon");
 const axios = require('axios').default;
 const {google} = require('googleapis');
-const credentials = require('../googleAPI/credentials.json');
+const credentials = require('./googleAPI/credentials.json');
 
 const scopes = [
     'https://www.googleapis.com/auth/drive'
@@ -135,7 +135,7 @@ module.exports = {
 
         let collecPosts = [];
         for (let i = 0; i < dayFiles.data.files.length; i++) {
-            collecPosts.push(dayFiles.data.files[i].webContentLink.slice(0, -16));
+            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16)});
         }
 
 

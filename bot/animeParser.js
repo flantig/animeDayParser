@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('../config');
 const sharedFunc = require("../sharedFunc");
+const {DateTime} = require("luxon");
 
 let subreddit;
 
@@ -42,7 +43,7 @@ client.on('message', async msg => {
 
         case config.prefix + "todayAll":
             let posts = await sharedFunc.getImgUrl(subreddit, true);
-            if (post.url != null) {
+            if (posts.url != null) {
                 msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
                 break;
             } else {
