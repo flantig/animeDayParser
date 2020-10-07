@@ -27,13 +27,25 @@ client.on('message', async msg => {
     switch (msg.content) {
         case config.prefix + "today":
             let post = await sharedFunc.getImgUrl(subreddit,false);
-            msg.channel.send(post.url);
-            break;
+            if(post.url != null) {
+                msg.channel.send(post.url);
+                break;
+            }else {
+                msg.channel.send("Uwaa~! I couldn't find an anirific day for you, sorry!");
+                msg.channel.send("https://i.imgur.com/FdZM8V1.gif");
+                break;
+            }
 
         case config.prefix + "todayAll":
             let posts = await sharedFunc.getImgUrl(subreddit,true);
-            msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
-            break;
+            if(post.url != null) {
+                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
+                break;
+            } else {
+                msg.channel.send("Uwaa~! I couldn't find an anirific day for you, sorry!");
+                msg.channel.send("https://i.imgur.com/FdZM8V1.gif");
+                break;
+            }
     }
 });
 
