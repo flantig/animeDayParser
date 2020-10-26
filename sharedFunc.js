@@ -1,6 +1,18 @@
 const snoowrap = require('snoowrap');
 const config = require('./config');
 const {DateTime} = require("luxon");
+const axios = require('axios').default;
+const {google} = require('googleapis');
+const credentials = require('./googleAPI/credentials.json');
+
+const scopes = [
+    'https://www.googleapis.com/auth/drive'
+];
+const auth = new google.auth.JWT(
+    credentials.client_email, null,
+    credentials.private_key, scopes
+);
+const drive = google.drive({version: "v3", auth});
 
 module.exports = {
     /**
@@ -45,6 +57,112 @@ module.exports = {
         } else {
             return returnVal
         }
+    },
+
+    /**
+     *@ToDo: In redditImageDownloader.js you want to check what the last date in your loop is and increase the start and end date paramters by 5-10 days
+     *       using luxon until you either complete the month or the entire year. Month for testing most likely and year for the remainder. You also probably
+     *       want to actually download the damn images too since you spent a lot of time trying to trouble shoot a backtick/double quotes syntax error.
+     *
+     *
+     * @param UTCStringStart/UTCStringEnd: Luxon can parse UTC/UNIX time formats, and so the plan is to have a loop going backwards month per month until we
+     * go back an entire year in redditImageDownloader.js while in sharedFunc.js it will go through the days.
+     *
+     * @returns {Promise<[]>}: It should bring an array with jsons containing the following values:
+     *
+     *          Date - Date is going to be used to name folders, the format for it is LLLLMM (ex. August09)
+     *          UTC  - This is here in case I'll need to work with DateTime again and to more easily set a name for a general month folder
+     *          URL  - The actual url of the image that I'll use to download
+     *
+     *@if (DateTime.fromSeconds(post.data.data[i].created_utc).day === initialDate.day): This is a check to make sure we're on the same day as we go through through
+     * the data. If it isn't, we change
+     *
+     * @Limitations: It seems like it can only load up 12 days at a time. I'm not sure why but if I had to guess, it's probably because they're trying not to get their
+     * endpoint absolutely destroyed.
+     *
+     * @if (current.url.match(/\.(jpeg|jpg|gif|png)$/)): This is a regex that makes sure the url is actually an image. I was running into a problem where the ide
+     * didn't like the file I was downloading. I guess this helps remove bloat files too.
+     */
+    getAxios: async (UTCStringStart, UTCStringEnd) => {
+        let collecPosts = [];
+
+        const post = await axios.get(`https://api.pushshift.io/reddit/search/submission/?&after=${UTCStringStart}&before=${UTCStringEnd}&allow_videos=false&pretty&subreddit=AnimeCalendar`);
+        try {
+            for (let i = 0; i < post.data.data.length; i++) {
+                let current = post.data.data[i];
+                const formatted = DateTime.fromSeconds(current.created_utc).toLocaleString({
+                    month: 'short',
+                    day: '2-digit'
+                });
+                if (current.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+                    collecPosts.push({
+                        "Date": formatted,
+                        "UTC": current.created_utc,
+                        "options": {
+                            "url": current.url,
+                            "dest": `C:/Users/Home/Desktop/Months/${DateTime.fromSeconds(current.created_utc).toLocaleString({month: 'long'})}/${formatted}/`
+                        }
+                    })
+                }
+            }
+        } catch (err) {
+            console.error("Something's amiss...");
+            console.error(err);
+            console.error("===================================================================================================");
+            console.error("===================================================================================================");
+        }
+
+        //console.log("debug check")
+        return collecPosts;
+
+    },
+
+    /**
+     *
+     * @param monthDay: We pass in the shortened day format of month: 'short' and day: '2-digit' because that's how the folders are named. We use that to obtain
+     * the id of the folder in google drive to finally obtain the files within.
+     *
+     * @returns collecPosts: This is going to be an array of objects in the following format [ {title: monthDay, url: url} ]. The reason why we retain the title is
+     * for todayAll to match the parameters that anthony's bot requires.
+     *
+     * @parameter drive.files.list: This is essentially a search query built into the google drive api:
+     *
+     *      q: 'q' stands for query and you can search by all kinds of parameters relating to files in your google drive. It is advised you use
+     *      backticks so that you can just easily pass paramters into it. Also note that I still put double quotes around ${id}, I spent nearly an entire
+     *      hour trying to figure that out.
+     *
+     *      pageSize: self explanatory but completely unnecesarry. There will technically never be an instance in which there are repeat day folders.
+     *
+     *      fields: this is the information that it returns back to you in the json file and it's super cool in which you can take only what you need. The
+     *      google docs api has a whole list of things you can take back
+     *
+     *      orderBy: some filter, ordering. Again, doesn't matter really.
+     */
+    getGoogle: async (monthDay) => {
+        const drive = await google.drive({version: 'v3', auth});
+        let res = await drive.files.list({
+            q: `name = "${monthDay}"`,
+            pageSize: 10,
+            fields: 'files(name, id)',
+            orderBy: 'createdTime desc'
+        });
+
+        const id = await res.data.files[0].id;
+
+        let dayFiles = await drive.files.list({
+            q: `"${id}" in parents`,
+            fields: 'files(name, webViewLink, webContentLink, id)',
+
+        })
+
+        let collecPosts = [];
+        for (let i = 0; i < dayFiles.data.files.length; i++) {
+            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16)});
+        }
+
+
+        return collecPosts;
+
     },
     /**
      * This function takes in an array of discord embeds and displays them through dynamic pagination. This is done
