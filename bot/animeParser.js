@@ -26,13 +26,14 @@ client.on('ready', async x => {
 client.on('message', async msg => {
     switch (msg.content) {
         case config.prefix + "today":
-            let post = await sharedFunc.getImgUrl(subreddit,false);
-            msg.channel.send(post.url);
+            await post(msg);
             break;
 
         case config.prefix + "todayAll":
             let posts = await sharedFunc.getImgUrl(subreddit,true);
-            msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
+            posts.length > 1
+                ? msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)))
+                : await post(msg);
             break;
     }
 });
@@ -46,13 +47,20 @@ client.on('message', async msg => {
  * @returns Discord.MessageEmbed[]
  */
 const urlArrToEmbedArr = async (posts) => {
-    return posts.map(post => {
-        return new Discord.MessageEmbed()
-            .setTitle(post.title)
-            .setURL(post.url)
-            .setColor("#3e3e3e")
-            .setImage(post.url)
-    })
+    return posts.map(post => generateEmbedOut(post))
+};
+
+const generateEmbedOut = async (post) => {
+    return new Discord.MessageEmbed()
+        .setTitle(post.title)
+        .setURL(post.url)
+        .setColor("#3e3e3e")
+        .setImage(post.url)
+};
+
+const post = async (msg) => {
+    let post = await sharedFunc.getImgUrl(subreddit,false);
+    await msg.channel.send(await generateEmbedOut(post));
 };
 
 client.login(config.discordToken);
