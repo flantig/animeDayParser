@@ -23,11 +23,13 @@ function checkMongo() {
 client.on('ready', async x => {
     console.log("i'm lit on " + client.guilds.cache.size + " servers.");
 
-    let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
-    var randomIMG = posts[Math.floor(Math.random() * posts.length)];
-    let dailyGuildArray = await sharedFunc.dailyMongoSender();
+
 
     setInterval(async function () {
+        let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
+        var randomIMG = posts[Math.floor(Math.random() * posts.length)];
+        let dailyGuildArray = await sharedFunc.dailyMongoSender();
+
         for (const element of dailyGuildArray) {
             let guild = client.guilds.fetch(element.guildID);
             let channel = (await guild).channels.cache.find(channel => channel.id === element.channelID);
