@@ -7,6 +7,8 @@
     "googleapis": "^39.2.0",
     "image-downloader": "^4.0.1",
     "luxon": "^1.25.0",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.10.15",
     "node-fetch": "^2.6.1",
     "snoowrap": "^1.21.0"
   }

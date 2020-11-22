@@ -4,6 +4,7 @@ const {DateTime} = require("luxon");
 const axios = require('axios').default;
 const {google} = require('googleapis');
 const credentials = require('./googleAPI/credentials.json');
+const {MongoClient} = require('mongodb');
 
 const scopes = [
     'https://www.googleapis.com/auth/drive'
@@ -12,6 +13,9 @@ const auth = new google.auth.JWT(
     credentials.client_email, null,
     credentials.private_key, scopes
 );
+
+const uri = `mongodb+srv://TangySalmon:${credentials.mongoPW}@discordguildholder.pk6r8.mongodb.net/${credentials.mongoDB}?retryWrites=true&w=majority`
+const mongoClient = new MongoClient(uri);
 const drive = google.drive({version: "v3", auth});
 
 module.exports = {
@@ -162,6 +166,51 @@ module.exports = {
 
 
         return collecPosts;
+
+    },
+    /**
+     * The intent for the following function will be to either add or replace where the bot posts daily images in the discord. The user should also be able to turn it off
+     * completely if they don't want to see Aniday posts anymore.
+     *
+     *
+     * @sendMongoEntry: Will replace a current entry if it exists, if it doesn't exist it'll use upsert to add a new entry for daily AniDay posts.
+     *
+     * @removeMongoEntry: Will check to see if we even have an entry for AniDay in the current guild the message is being sent. If there is an entry, we remove it.
+     * If there isn't an entry, we send some feedback to the user telling them that there isn't anything to remove.
+     *
+     * @dailyMongoSender: After the 24 hour interval, the bot will go through all of the guilds currently subscribed to AniDay daily posts and posts that day's random image.
+     */
+    sendMongoEntry: async (guildID, guildCurrentChannel) => {
+        await mongoClient.connect();
+        let result;
+
+        result = await mongoClient.db("aniDayStorage").collection("dailyImage").replaceOne({"guildID": guildID}, {"guildID": guildID, "channelID": guildCurrentChannel}, {upsert: true});
+
+        mongoClient.logout();
+        return result.guildID;
+    },
+    removeMongoEntry: async (guildID) => {
+        await mongoClient.connect();
+        let botFeedback;
+        const currentListLength = await mongoClient.db("aniDayStorage").collection("dailyImage").findOne({"guildID": guildID});
+        if (currentListLength != null) {
+            result = await mongoClient.db("aniDayStorage").collection("dailyImage").removeOne({"guildID": guildID});
+            botFeedback = "We successfully removed AniDay posts!"
+        } else {
+            botFeedback = "This server was never receiving AniDay posts..."
+        }
+        mongoClient.logout();
+        return botFeedback;
+    },
+    dailyMongoSender: async () => {
+        await mongoClient.connect();
+        const daily = await mongoClient.db("aniDayStorage").collection("dailyImage").find({}, {
+            "guildID": 1,
+            "channelID": 1,
+            "_id": 0
+        }).toArray();
+        mongoClient.logout();
+        return daily;
 
     },
     /**

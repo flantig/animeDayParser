@@ -3,19 +3,42 @@ const client = new Discord.Client();
 const config = require('../config.json');
 const sharedFunc = require("../sharedFunc");
 const {DateTime} = require("luxon");
+const {MongoClient} = require('mongodb');
 
 let subreddit;
+
+function checkMongo() {
+    const guild = client.guilds.get("");
+}
 
 /**
  * Client listener that runs exactly one (1) time when the bot first starts. Anything that needs to be ran to set up
  * bot functionality should be run in this function. Currently it is used to signal in console that the bot has started
  * and the create the reference to the AnimeCalendar subreddit.
+ *
+ * @posts: Fetches all the possible images for that day and chooses one at random to display
+ *
+ * @setInterval: After 24 hours, the bot will reach out to MongoDB and ask what servers it should be sending a daily AniDay image too
  */
 client.on('ready', async x => {
     console.log("i'm lit on " + client.guilds.cache.size + " servers.");
+
+    let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
+    var randomIMG = posts[Math.floor(Math.random() * posts.length)];
+    let dailyGuildArray = await sharedFunc.dailyMongoSender();
+
+    setInterval(async function () {
+        for (const element of dailyGuildArray) {
+            let guild = client.guilds.fetch(element.guildID);
+            let channel = (await guild).channels.cache.find(channel => channel.id === element.channelID);
+
+            channel.send(randomIMG.url);
+        }
+    }, 1000 * 60 * 60 * 24) //1 day interval
+
+
     subreddit = await sharedFunc.getSubredditReference("AnimeCalendar");
 });
-
 /**
  * @case config.prefix + "today": This should post the highest voted post on Hot that matches today's date. It's
  * probably overkill to use luxon just to fetch today's date but uh, it's fine. It uses "selectedHighestVoted" so that
@@ -23,6 +46,8 @@ client.on('ready', async x => {
  * didn't, it returns that it couldn't find anything.
  *
  * @case config.prefix + "todayAll": It posts absolutely every post matching today's date. If it doesn't it runs the checks above.
+ *
+ * @case daily AND daily + " off": They set and remove the daily Aniday posts respectively.
  */
 client.on('message', async msg => {
     switch (msg.content) {
@@ -55,14 +80,21 @@ client.on('message', async msg => {
                 break;
             }
         case config.prefix + "yesterday":
-                let yposts = await sharedFunc.getGoogle(DateTime.local().minus({ days: 1 }).toLocaleString({
-                    month: 'short',
-                    day: '2-digit'
-                }));
-                var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
-                msg.channel.send(randomIMG.url);
-                break;
-
+            let yposts = await sharedFunc.getGoogle(DateTime.local().minus({days: 1}).toLocaleString({
+                month: 'short',
+                day: '2-digit'
+            }));
+            var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
+            msg.channel.send(randomIMG.url);
+            break;
+        case config.prefix + "daily":
+            let getMongo = await sharedFunc.sendMongoEntry(msg.guild.id, msg.channel.id);
+            msg.channel.send("You've set daily AniDay posts! Remember, you can always turn me off with '>daily off'. ");
+            break;
+        case config.prefix + "daily" + " off":
+            let removeMongo = await sharedFunc.removeMongoEntry(msg.guild.id);
+            msg.channel.send(removeMongo);
+            break;
     }
 });
 
