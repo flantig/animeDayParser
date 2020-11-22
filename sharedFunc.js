@@ -5,6 +5,7 @@ const axios = require('axios').default;
 const {google} = require('googleapis');
 const credentials = require('./googleAPI/credentials.json');
 const {MongoClient} = require('mongodb');
+const deepai = require('deepai');
 
 const scopes = [
     'https://www.googleapis.com/auth/drive'
@@ -161,7 +162,7 @@ module.exports = {
 
         let collecPosts = [];
         for (let i = 0; i < dayFiles.data.files.length; i++) {
-            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16)});
+            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16), folderID: dayFiles.fol});
         }
 
 
@@ -184,7 +185,10 @@ module.exports = {
         await mongoClient.connect();
         let result;
 
-        result = await mongoClient.db("aniDayStorage").collection("dailyImage").replaceOne({"guildID": guildID}, {"guildID": guildID, "channelID": guildCurrentChannel}, {upsert: true});
+        result = await mongoClient.db("aniDayStorage").collection("dailyImage").replaceOne({"guildID": guildID}, {
+            "guildID": guildID,
+            "channelID": guildCurrentChannel
+        }, {upsert: true});
 
         mongoClient.logout();
         return result.guildID;

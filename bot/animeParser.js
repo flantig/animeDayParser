@@ -4,12 +4,10 @@ const config = require('../config.json');
 const sharedFunc = require("../sharedFunc");
 const {DateTime} = require("luxon");
 const {MongoClient} = require('mongodb');
+import imagedown from './imageCompareAndDownload';
 
 let subreddit;
 
-function checkMongo() {
-    const guild = client.guilds.get("");
-}
 
 /**
  * Client listener that runs exactly one (1) time when the bot first starts. Anything that needs to be ran to set up
@@ -26,7 +24,8 @@ client.on('ready', async x => {
 
 
     setInterval(async function () {
-        let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
+        let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
+        let posts = await sharedFunc.getGoogle(day);
         var randomIMG = posts[Math.floor(Math.random() * posts.length)];
         let dailyGuildArray = await sharedFunc.dailyMongoSender();
 
@@ -37,6 +36,7 @@ client.on('ready', async x => {
             channel.send(randomIMG.url);
         }
     }, 1000 * 60 * 60 * 24) //1 day interval
+
 
 
     subreddit = await sharedFunc.getSubredditReference("AnimeCalendar");
