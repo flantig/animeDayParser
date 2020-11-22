@@ -8,14 +8,14 @@ You can find the webserver [here](http://www.animetodayme.me), if your browser f
 ### Endpoints
 > [/today](http://www.animetodayme.me/today) 
 
-Returns a single JSON object containing exactly one (1) shitpost.
+Returns a single JSON object containing exactly one (1) post.
 
 > [/todayAll](http://www.animetodayme.me/todayAll) 
 
-Returns an array of JSON objects full of however many shitposts there are for the current day.
+Returns an array of JSON objects full of however many posts there are for the current day.
 
 ### How do I use this in my code
-You can use these images for whatever the hell you want, but here's an example of fetching the shitposts from the `todayAll` endpoint and printing their urls. 
+You can use these images for whatever the hell you want, but here's an example of fetching the posts from the `todayAll` endpoint and printing their urls. 
 
 This particular example is done in Node.js and uses node-fetch.
 
@@ -46,9 +46,19 @@ You can invite this discord bot to your server [here](https://discord.com/api/oa
 ### Bot Commands
 > \>today 
 
-This command will display only one (1) shitpost. 
+This command will display only one (1) post. 
 
 > \>todayAll 
 
-This command will display every shitpost that is for the current day in a paginated embed. \
-Click the reactions on the bottom to scroll through the shitposts.
+This command will display every post that is for the current day in a paginated embed. \
+Click the reactions on the bottom to scroll through the posts.
+
+> \>daily
+
+This command will post one randomized post every 24 hours. Use this command in the text \
+channel you'd like it to post daily.
+
+
+> \>daily off
+
+This command checks if the server is set for automated posts. If it is, we turn it off. If it isn't, we tell the user that it wasn't set
