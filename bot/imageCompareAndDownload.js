@@ -54,7 +54,7 @@ async function comparitor(day, callback) {
                 image1: image.url,
                 image2: googImage.url,
             });
-
+            console.log(resp);
             if (resp.output.distance < 5) { //if there is a match, we break out of the loop and don't download anything
                 downloadYesOrNo = false;
                 break;
