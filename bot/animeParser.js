@@ -4,7 +4,6 @@ const config = require('../config.json');
 const sharedFunc = require("../sharedFunc");
 const {DateTime} = require("luxon");
 const {MongoClient} = require('mongodb');
-import imagedown from './imageCompareAndDownload';
 
 let subreddit;
 
