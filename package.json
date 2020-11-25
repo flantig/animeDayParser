@@ -11,6 +11,7 @@
     "luxon": "^1.25.0",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.15",
+    "node-cron": "^2.0.3",
     "node-fetch": "^2.6.1",
     "snoowrap": "^1.21.0"
   }

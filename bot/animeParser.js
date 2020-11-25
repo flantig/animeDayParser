@@ -4,6 +4,7 @@ const config = require('../config.json');
 const sharedFunc = require("../sharedFunc");
 const {DateTime} = require("luxon");
 const {MongoClient} = require('mongodb');
+var cron = require('node-cron');
 
 let subreddit;
 
@@ -22,7 +23,7 @@ client.on('ready', async x => {
 
 
 
-    setInterval(async function () {
+    cron.schedule('20 00 * * *', async function () {
         let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
         let posts = await sharedFunc.getGoogle(day);
         var randomIMG = posts[Math.floor(Math.random() * posts.length)];
@@ -34,7 +35,7 @@ client.on('ready', async x => {
 
             channel.send(randomIMG.url);
         }
-    }, 1000 * 60 * 60 * 24) //1 day interval
+    });
 
 
 
