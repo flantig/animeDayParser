@@ -113,5 +113,9 @@ async function uploadFolder() {
 
 }
 
+let year = 365;
 
-comparitor(day, uploadFolder);
+while (year > 0) {
+    comparitor(day, uploadFolder);
+
+}

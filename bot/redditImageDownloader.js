@@ -35,8 +35,9 @@ function sleep(ms) {
 
 async function downloader() {
     let year = 365;
-    let start = 1567296000;
-    let end = 1568246400;
+    let start = 1567296000; //09/01/2019 @ 12:00am UTC
+    let end = 1568246400; //09/12/2019 @ 12:00am (UTC)
+
     console.log(DateTime.fromSeconds(start).toLocaleString({
         month: 'short',
         day: '2-digit'
