@@ -199,19 +199,20 @@ module.exports = {
     },
 
     downloadGoogle: async (fileID) => {
+        return new Promise((resolve, reject) => {
+            drive.files.get({fileId: fileID, alt: 'media'}, {responseType: "arraybuffer"},
+                function (err, {data}) {
+                    fs.writeFile("../images/options2.jpg", Buffer.from(data), err => {
+                        if (err) {
+                            console.log(err);
+                            return reject(err);
+                        }
 
-        // let progress = 0;
-
-        drive.files.get({fileId: fileID, alt: 'media'}, { responseType: "arraybuffer" },
-            function(err, { data }) {
-                fs.writeFile("../images/options2.jpg", Buffer.from(data), err => {
-                    if (err) console.log(err);
-                });
-            }
-        );
-
-
-        return fileID;
+                        return resolve('file saved.')
+                    });
+                }
+            );
+        });
     },
     /**
      * The intent for the following function will be to either add or replace where the bot posts daily images in the discord. The user should also be able to turn it off
@@ -261,6 +262,16 @@ module.exports = {
         return daily;
 
     },
+    specificMongoDay: async (dayToBeSearched) => {
+        await mongoClient.connect();
+        const day = await mongoClient.db("aniDayStorage").collection("dailyImage").find({ "guildID" : dayToBeSearched}, {
+            "guildID": 1,
+            "channelID": 1,
+            "_id": 0
+        }).toArray();
+        mongoClient.logout();
+        return day;
+    },
     /**
      * This function takes in an array of discord embeds and displays them through dynamic pagination. This is done
      * through the Discord.js reaction collector, which listens for two specific reactions to take place, forward or
@@ -304,4 +315,5 @@ module.exports = {
         );
         return curPage;
     },
-};
+}
+;

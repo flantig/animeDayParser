@@ -35,8 +35,8 @@ const uri = `mongodb+srv://TangySalmon:${credentials.mongoPW}@discordguildholder
 const mongoClient = new MongoClient(uri);
 
 async function hasher() {
-    let start = 1574726400; //11/26/2019 @ 12:00am (UTC)
-    let end = 1574812740; //11/26/2019 @ 11:59pm (UTC)
+    let start = 1596412800; //11/26/2019 @ 12:00am (UTC)
+    let end = 1596499140; //11/26/2019 @ 11:59pm (UTC)
     let year = 365;
     let day = DateTime.fromSeconds(end).toLocaleString({month: 'short', day: '2-digit'});
     const drive = await google.drive({version: 'v3', auth}); //obligatory authentication
@@ -66,7 +66,7 @@ async function hasher() {
                 .then(({filename}) => {
                     //console.log('Matching image detected ||', filename)
                 })
-                .catch((err) => console.error(err))
+                .catch((err) => {console.log(err.statusCode); console.error(err);})
 
             let comments = await sharedFunc.getComments(post.threadID);
             let noTitle = false;
@@ -83,7 +83,8 @@ async function hasher() {
             for (let i = 0; i < googlePosts.length; i++) {
                 await sleep(1500);
 
-                const googleDownload = sharedFunc.downloadGoogle(googlePosts[i].id);
+
+                const googleDownload = await sharedFunc.downloadGoogle(googlePosts[i].id);
 
 
                 const hash1 = await imghash.hash('../images/options1.png', 8, 'binary');
@@ -93,26 +94,30 @@ async function hasher() {
                 const comp = await leven(hash1, hash2);
                 console.log(comp);
                 //console.log(resp);
-                if (comp < 5) { //if there is a match, we break out of the loop and don't download anything
+                if (comp < 9) { //if there is a match, we break out of the loop and don't download anything
                     downloadYesOrNo = false;
-                    currentImage = googlePosts[i - 1].url;
-                    fs.unlink(`../images/options2.jpg`, (err) => {
-                        if (err) {
-                            console.log("failed to delete local image:" + err);
-                        } else {
-                            console.log('Successfully deleted the current image');
-                        }
-                    });
+
+                        aniDay.imageHash = hash1;
+                        currentImage = googlePosts[i].url;
+
+
+                    // fs.unlink(`../images/options2.jpg`, (err) => {
+                    //     if (err) {
+                    //         console.log("failed to delete local image:" + err);
+                    //     } else {
+                    //         console.log('Successfully deleted the current image');
+                    //     }
+                    // });
                     break;
                 }
-
-                fs.unlink(`../images/options2.jpg`, (err) => {
-                    if (err) {
-                        console.log("failed to delete local image:" + err);
-                    } else {
-                        console.log('Successfully deleted the current image');
-                    }
-                });
+                //
+                // fs.unlink(`../images/options2.jpg`, (err) => {
+                //     if (err) {
+                //         console.log("failed to delete local image:" + err);
+                //     } else {
+                //         console.log('Successfully deleted the current image');
+                //     }
+                // });
             }
 
             if (!downloadYesOrNo) { //Did we ever find a new image in the end? If so, download it.
@@ -122,6 +127,9 @@ async function hasher() {
                         aniDay.url = currentImage;
                     } else if (comment.commentBody.includes("<") && !comment.commentBody.includes("http")) {
                         aniDay.animeTitle = comment.commentBody.replace("<", "").replace(">", "");
+                        aniDay.url = currentImage;
+                    } else {
+                        aniDay.animeTitle = "Unknown"
                         aniDay.url = currentImage;
                     }
                 }
@@ -134,13 +142,13 @@ async function hasher() {
                 result = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").replaceOne({"url": aniDay.url}, aniDay, {upsert: true});
             }
 
-            fs.unlink(`../images/options1.png`, (err) => {
-                if (err) {
-                    console.log("failed to delete local image:" + err);
-                } else {
-                    console.log('Successfully deleted the current image');
-                }
-            });
+            // fs.unlink(`../images/options1.png`, (err) => {
+            //     if (err) {
+            //         console.log("failed to delete local image:" + err);
+            //     } else {
+            //         console.log('Successfully deleted the current image');
+            //     }
+            // });
         }
 
         start = end;
@@ -148,6 +156,7 @@ async function hasher() {
         year = year - 1;
         day = DateTime.fromSeconds(end).toLocaleString({month: 'short', day: '2-digit'});
         posts = await sharedFunc.getAxios(start, end);
+        console.log("Moving onto: ", day);
         googlePosts = await sharedFunc.getGoogle(day); //grabs the already saved images from google drive
     }
 }
