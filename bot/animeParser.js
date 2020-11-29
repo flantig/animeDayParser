@@ -2,12 +2,18 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const config = require('../config.json');
 const sharedFunc = require("../sharedFunc");
+const fs = require('fs');
+const imghash = require('imghash');
+const leven = require('leven');
 const {DateTime} = require("luxon");
 const {MongoClient} = require('mongodb');
+const credentials = require('../googleAPI/credentials.json');
+const {google} = require('googleapis');
 var cron = require('node-cron');
 let subreddit;
 const uri = `mongodb+srv://TangySalmon:${credentials.mongoPW}@discordguildholder.pk6r8.mongodb.net/${credentials.mongoDB}?retryWrites=true&w=majority`
 const mongoClient = new MongoClient(uri);
+const download = require('image-downloader');
 const scopes = [
     'https://www.googleapis.com/auth/drive'
 ];
@@ -56,7 +62,8 @@ client.on('ready', async x => {
         }
     });
 
-    cron.schedule( '30 20 * * *' , dailyChecker(DateTime.local()));
+
+    cron.schedule( '30 20 * * *' , async function () {dailyChecker(DateTime.local())});
 
 
 
