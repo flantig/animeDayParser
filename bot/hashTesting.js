@@ -66,7 +66,10 @@ async function hasher() {
                 .then(({filename}) => {
                     //console.log('Matching image detected ||', filename)
                 })
-                .catch((err) => {console.log(err.statusCode); console.error(err);})
+                .catch((err) => {
+                    console.log(err.statusCode);
+                    console.error(err);
+                })
 
             let comments = await sharedFunc.getComments(post.threadID);
             let noTitle = false;
@@ -97,8 +100,8 @@ async function hasher() {
                 if (comp < 9) { //if there is a match, we break out of the loop and don't download anything
                     downloadYesOrNo = false;
 
-                        aniDay.imageHash = hash1;
-                        currentImage = googlePosts[i].url;
+                    aniDay.imageHash = hash1;
+                    currentImage = googlePosts[i].url;
 
 
                     // fs.unlink(`../images/options2.jpg`, (err) => {

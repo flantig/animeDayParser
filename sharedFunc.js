@@ -264,11 +264,7 @@ module.exports = {
     },
     specificMongoDay: async (dayToBeSearched) => {
         await mongoClient.connect();
-        const day = await mongoClient.db("aniDayStorage").collection("dailyImage").find({ "guildID" : dayToBeSearched}, {
-            "guildID": 1,
-            "channelID": 1,
-            "_id": 0
-        }).toArray();
+        const day = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").find({ "day" : dayToBeSearched}).toArray();
         mongoClient.logout();
         return day;
     },

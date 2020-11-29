@@ -5,8 +5,27 @@ const sharedFunc = require("../sharedFunc");
 const {DateTime} = require("luxon");
 const {MongoClient} = require('mongodb');
 var cron = require('node-cron');
-
 let subreddit;
+const uri = `mongodb+srv://TangySalmon:${credentials.mongoPW}@discordguildholder.pk6r8.mongodb.net/${credentials.mongoDB}?retryWrites=true&w=majority`
+const mongoClient = new MongoClient(uri);
+const scopes = [
+    'https://www.googleapis.com/auth/drive'
+];
+const auth = new google.auth.JWT(
+    credentials.client_email, null,
+    credentials.private_key, scopes
+);
+
+
+/**
+ *
+ * @param ms: the time you want to set something to sleep.
+ * @returns {Promise<unknown>}: By harnessing the power of promises, we can force our application to
+ *          sleep similarly to how you can in python. You can await the timeout to finish before proceeding.
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 /**
@@ -36,6 +55,8 @@ client.on('ready', async x => {
             channel.send(randomIMG.url);
         }
     });
+
+    cron.schedule( '30 20 * * *' , dailyChecker(DateTime.local()));
 
 
 
@@ -117,5 +138,124 @@ const urlArrToEmbedArr = async (posts) => {
             .setImage(post.url)
     })
 };
+
+let aniDay = {
+    "day": "",
+    "imageHash": "",
+    "animeTitle": "N/A",
+    "url": "N/A"
+};
+
+const dailyChecker = async (day) => {
+    await mongoClient.connect();
+    let id;
+    const start = await DateTime.local().startOf('day').toSeconds().toString();
+    const end = await DateTime.local().endOf('day').toSeconds().toString() - .999;
+    const redditImages = await sharedFunc.getAxios(start, end);
+
+    aniDay.day = DateTime.fromSeconds(end).toLocaleString({month: 'short', day: '2-digit'});
+    //const redditImages = await sharedFunc.getAxios(start, end);
+    const drive = await google.drive({version: 'v3', auth}); //obligatory authentication
+    const googleImages = await sharedFunc.specificMongoDay(DateTime.local().toLocaleString({
+        month: 'short',
+        day: '2-digit'
+    }));
+
+    console.log("Today's Date: ", aniDay.day);
+    console.log("The reddit image set : ");
+    console.log(redditImages);
+    console.log("The already established image set : ");
+    console.log(googleImages);
+
+    let currentFolder = await drive.files.list({
+        q: `name = "${day.toLocaleString({
+            month: 'short',
+            day: '2-digit'
+        })}"`,
+        pageSize: 10,
+        fields: 'files(name, id)',
+        orderBy: 'createdTime desc'
+    });
+
+
+    id = await currentFolder.data.files[0].id; //the folder we're working with, aka, today's date
+
+
+    for (let post of redditImages) {
+        let options1 = {"url": post.options.url, "dest": "../images/options1.png"};
+        let hash1, hash2;
+        let downloadYesOrNo = true;
+
+        await download.image(options1) //this is the path and the url of the image we store earlier
+            .then(({filename}) => {
+                //console.log('Matching image detected ||', filename)
+            })
+            .catch((err) => {
+                console.log(err.statusCode);
+                console.error(err);
+            })
+        for (let goog of googleImages) {
+            await sleep(1500);
+            const googleDownload = await sharedFunc.downloadGoogle(goog.url.split("https://drive.google.com/uc?id=")[1]);
+
+            hash1 = await imghash.hash('../images/options1.png', 8, 'binary');
+            hash2 = await imghash.hash('../images/options2.jpg', 8, 'binary');
+            const comp = await leven(hash1, hash2);
+
+            if (comp < 9) { //if there is a match, we break out of the loop and don't download anything
+                downloadYesOrNo = false;
+
+
+                currentImage = goog.url;
+
+                break;
+            }
+        }
+
+        if (downloadYesOrNo) { //Did we ever find a new image in the end? If so, upload it.
+            let comments = await sharedFunc.getComments(post.threadID);
+            let fileMetadata = {
+                'name': `options1.png`, //The name of the file
+                parents: [id] //the folder we're uploading to
+            };
+
+            var media = {
+                body: fs.createReadStream(`../images/options1.png`) //the file we're uploading
+            };
+
+
+            drive.files.create({ //create is the function that uploads the file, it takes in an object denoting the parameters above and a callback function that deletes the file after uploading.
+                resource: fileMetadata,
+                media: media,
+                fields: 'id'
+            }).then(async function (response) {
+                console.log("The current image has been successfully uploaded ||", response.data.id);
+                aniDay.url = "https://drive.google.com/uc?id=" + response.data.id;
+
+                for (let comment of comments) {
+                    if (comment.commentBody.includes("{") && !comment.commentBody.includes("http")) {
+                        aniDay.animeTitle = comment.commentBody.replace("{", "").replace("}", "");
+                        aniDay.imageHash = hash1;
+                    } else if (comment.commentBody.includes("<") && !comment.commentBody.includes("http")) {
+                        aniDay.animeTitle = comment.commentBody.replace("<", "").replace(">", "");
+                        aniDay.imageHash = hash1;
+                    } else {
+                        aniDay.animeTitle = "Unknown";
+                        aniDay.imageHash = hash1;
+
+                    }
+                }
+
+                let result = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").replaceOne({"url": aniDay.url}, aniDay, {upsert: true});
+            }, function (err) {
+                console.error("Execute error", err);
+            });
+
+
+        }
+    }
+    mongoClient.logout();
+}
+
 
 client.login(config.discordToken);
