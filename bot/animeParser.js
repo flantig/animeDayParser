@@ -98,15 +98,15 @@ client.on('message', async msg => {
 
         case config.prefix + "todayAll":
             let posts = await sharedFunc.getImgUrl(subreddit, true);
+            let postsG = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
+                month: 'short',
+                day: '2-digit'
+            }));
             if (posts.url != null) {
                 msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
                 break;
             } else {
-                let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
-                    month: 'short',
-                    day: '2-digit'
-                }));
-                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
+                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postsG)));
                 break;
             }
         case config.prefix + "yesterday":
