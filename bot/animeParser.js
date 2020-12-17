@@ -96,19 +96,20 @@ client.on('message', async msg => {
                 break;
             }
 
-        case config.prefix + "todayAll":
-            let posts = await sharedFunc.getImgUrl(subreddit, true);
-            let postsG = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
-                month: 'short',
-                day: '2-digit'
-            }));
-            if (posts.url != null) {
-                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
-                break;
-            } else {
-                msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postsG)));
-                break;
-            }
+        //Anthony's code doesn't work, I'll vault this for now
+        // case config.prefix + "todayAll":
+        //     let posts = await sharedFunc.getImgUrl(subreddit, true);
+        //     let postsG = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
+        //         month: 'short',
+        //         day: '2-digit'
+        //     }));
+        //     if (posts.url != null) {
+        //         msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
+        //         break;
+        //     } else {
+        //         msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postsG)));
+        //         break;
+        //     }
         case config.prefix + "yesterday":
             let yposts = await sharedFunc.getGoogle(DateTime.local().minus({days: 1}).toLocaleString({
                 month: 'short',
