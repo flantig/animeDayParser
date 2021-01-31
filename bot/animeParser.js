@@ -46,8 +46,6 @@ function sleep(ms) {
 client.on('ready', async x => {
     console.log("i'm lit on " + client.guilds.cache.size + " servers.");
 
-
-
     cron.schedule('20 00 * * *', async function () {
         let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
         let posts = await sharedFunc.getGoogle(day);
@@ -64,9 +62,7 @@ client.on('ready', async x => {
 
 
     cron.schedule( '30 20 * * *' , async function () {dailyChecker(DateTime.local())});
-
-
-
+    
     subreddit = await sharedFunc.getSubredditReference("AnimeCalendar");
 });
 /**
@@ -84,7 +80,13 @@ client.on('message', async msg => {
         case config.prefix + "today":
             let post = await sharedFunc.getImgUrl(subreddit, false);
             if (post.url != null) {
-                msg.channel.send(post.url);
+                const embed = new Discord.MessageEmbed()
+                    .setTitle(DateTime.local().toLocaleString({
+                        month: 'long',
+                        day: '2-digit'
+                    }))
+                    .setImage(post.url)
+                msg.channel.send(embed);
                 break;
             } else {
                 let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
@@ -92,7 +94,14 @@ client.on('message', async msg => {
                     day: '2-digit'
                 }));
                 var randomIMG = posts[Math.floor(Math.random() * posts.length)];
-                msg.channel.send(randomIMG.url);
+                const embed = new Discord.MessageEmbed()
+                    .setTitle(DateTime.local().toLocaleString({
+                        month: 'long',
+                        day: '2-digit'
+                    }))
+                    .setDescription(randomIMG.animeTitle)
+                    .setImage(randomIMG.url)
+                msg.channel.send(embed);
                 break;
             }
 
@@ -110,6 +119,7 @@ client.on('message', async msg => {
         //         msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postsG)));
         //         break;
         //     }
+            
         case config.prefix + "yesterday":
             let yposts = await sharedFunc.getGoogle(DateTime.local().minus({days: 1}).toLocaleString({
                 month: 'short',
@@ -173,10 +183,10 @@ const dailyChecker = async (day) => {
 
     aniDay.day = DateTime.fromSeconds(end).toLocaleString({month: 'short', day: '2-digit'});
     const drive = await google.drive({version: 'v3', auth}); //obligatory authentication
-    const googleImages = await sharedFunc.specificMongoDay(DateTime.local().toLocaleString({
-        month: 'short',
-        day: '2-digit'
-    })); //grabs the current available images from the mongo database
+    const googleImages = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").find({ "day" : DateTime.local().toLocaleString({
+            month: 'short',
+            day: '2-digit'
+        })}).toArray();
 
     console.log("Today's Date: ", aniDay.day);
     console.log("The reddit image set : ");
