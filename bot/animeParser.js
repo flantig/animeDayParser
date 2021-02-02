@@ -48,7 +48,7 @@ client.on('ready', async x => {
 
     cron.schedule('20 00 * * *', async function () {
         let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
-        let posts = await sharedFunc.getGoogle(day);
+        let posts = await sharedFunc.specificMongoDay(getGoogle(day));
         var randomIMG = posts[Math.floor(Math.random() * posts.length)];
         let dailyGuildArray = await sharedFunc.dailyMongoSender();
 
@@ -85,18 +85,19 @@ client.on('ready', async x => {
 client.on('message', async msg => {
     switch (msg.content) {
         case config.prefix + "today":
-            let post = await sharedFunc.getImgUrl(subreddit, false);
-            if (post.url != null) {
-                const embed = new Discord.MessageEmbed()
-                    .setTitle(DateTime.local().toLocaleString({
-                        month: 'long',
-                        day: '2-digit'
-                    }))
-                    .setImage(post.url)
-                msg.channel.send(embed);
-                break;
-            } else {
-                let posts = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
+            //Likely never going to use the subreddit for daily images
+            // let post = await sharedFunc.getImgUrl(subreddit, false);
+            // if (post.url != null) {
+            //     const embed = new Discord.MessageEmbed()
+            //         .setTitle(DateTime.local().toLocaleString({
+            //             month: 'long',
+            //             day: '2-digit'
+            //         }))
+            //         .setImage(post.url)
+            //     msg.channel.send(embed);
+            //     break;
+            // } else {
+                let posts = await sharedFunc.specificMongoDay(DateTime.local().toLocaleString({
                     month: 'short',
                     day: '2-digit'
                 }));
@@ -109,8 +110,9 @@ client.on('message', async msg => {
                     .setDescription(randomIMG.animeTitle)
                     .setImage(randomIMG.url)
                 msg.channel.send(embed);
+                console.log(randomIMG);
                 break;
-            }
+        //    }
 
         //Anthony's code doesn't work, I'll vault this for now
         // case config.prefix + "todayAll":
