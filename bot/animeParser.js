@@ -56,7 +56,14 @@ client.on('ready', async x => {
             let guild = client.guilds.fetch(element.guildID);
             let channel = (await guild).channels.cache.find(channel => channel.id === element.channelID);
 
-            channel.send(randomIMG.url);
+            const embed = new Discord.MessageEmbed()
+                .setTitle(DateTime.local().toLocaleString({
+                    month: 'long',
+                    day: '2-digit'
+                }))
+                .setDescription(randomIMG.animeTitle)
+                .setImage(randomIMG.url)
+            channel.send(embed);
         }
     });
 
