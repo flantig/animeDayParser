@@ -48,7 +48,7 @@ client.on('ready', async x => {
 
     cron.schedule('20 00 * * *', async function () {
         let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
-        let posts = await sharedFunc.specificMongoDay(getGoogle(day));
+        let posts = await sharedFunc.specificMongoDay(day);
         var randomIMG = posts[Math.floor(Math.random() * posts.length)];
         let dailyGuildArray = await sharedFunc.dailyMongoSender();
 
