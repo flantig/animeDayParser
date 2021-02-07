@@ -114,4 +114,5 @@ async function uploadFolder() {
 }
 
 
-comparitor(day, uploadFolder);
+
+    comparitor(day, uploadFolder);

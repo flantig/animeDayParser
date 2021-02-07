@@ -6,6 +6,7 @@ const {google} = require('googleapis');
 const credentials = require('./googleAPI/credentials.json');
 const {MongoClient} = require('mongodb');
 const deepai = require('deepai');
+const fs = require('fs');
 
 const scopes = [
     'https://www.googleapis.com/auth/drive'
@@ -106,7 +107,8 @@ module.exports = {
                         "options": {
                             "url": current.url,
                             "dest": `C:/Users/Home/Desktop/Months/${DateTime.fromSeconds(current.created_utc).toLocaleString({month: 'long'})}/${formatted}/`
-                        }
+                        },
+                        "threadID": current.id
                     })
                 }
             }
@@ -120,6 +122,27 @@ module.exports = {
         //console.log("debug check")
         return collecPosts;
 
+    },
+    getComments: async (id) => {
+        const post = await axios.get(`https://api.pushshift.io/reddit/comment/search/?link_id=${id}&limit=20`);
+        let collecPosts = [];
+
+        try {
+            for (let i = 0; i < post.data.data.length; i++) {
+                let current = post.data.data[i];
+                collecPosts.push({
+                    "commentBody": current.body
+                });
+
+            }
+        } catch (err) {
+            console.error("Something's amiss...");
+            console.error(err);
+            console.error("===================================================================================================");
+            console.error("===================================================================================================");
+        }
+
+        return collecPosts;
     },
 
     /**
@@ -160,14 +183,36 @@ module.exports = {
 
         })
 
+
         let collecPosts = [];
         for (let i = 0; i < dayFiles.data.files.length; i++) {
-            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16), folderID: dayFiles.fol});
+            collecPosts.push({
+                title: monthDay,
+                url: dayFiles.data.files[i].webContentLink.slice(0, -16),
+                id: dayFiles.data.files[i].id
+            });
         }
 
 
         return collecPosts;
 
+    },
+
+    downloadGoogle: async (fileID) => {
+        return new Promise((resolve, reject) => {
+            drive.files.get({fileId: fileID, alt: 'media'}, {responseType: "arraybuffer"},
+                function (err, {data}) {
+                    fs.writeFile("../images/options2.jpg", Buffer.from(data), err => {
+                        if (err) {
+                            console.log(err);
+                            return reject(err);
+                        }
+
+                        return resolve('file saved.')
+                    });
+                }
+            );
+        });
     },
     /**
      * The intent for the following function will be to either add or replace where the bot posts daily images in the discord. The user should also be able to turn it off
@@ -217,6 +262,12 @@ module.exports = {
         return daily;
 
     },
+    specificMongoDay: async (dayToBeSearched) => {
+        await mongoClient.connect();
+        const day = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").find({ "day" : dayToBeSearched}).toArray();
+        mongoClient.logout();
+        return day;
+    },
     /**
      * This function takes in an array of discord embeds and displays them through dynamic pagination. This is done
      * through the Discord.js reaction collector, which listens for two specific reactions to take place, forward or
@@ -260,4 +311,5 @@ module.exports = {
         );
         return curPage;
     },
-};
+}
+;

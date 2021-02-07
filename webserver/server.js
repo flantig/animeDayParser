@@ -16,6 +16,10 @@ const requestListener = async function (req, res) {
             res.writeHead(200);
             res.end(await todayAll(subReddit));
             break;
+        case req.url.includes("/specific"):
+            const day = req.url.split("/specific/");
+            res.writeHead(200);
+            res.end(await specificMongoDay(day));
         default:
             res.writeHead(200);
             res.end(await defaultPage());
