@@ -123,12 +123,12 @@ client.on('message', async msg => {
                 month: 'short',
                 day: '2-digit'
             }));
-            let date = DateTime.local().minus({days: 1}).toLocaleString({
+            let datey = DateTime.local().minus({days: 1}).toLocaleString({
                 month: 'long',
                 day: '2-digit'
             })
             var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
-            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, date)));
+            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, datey)));
 
             console.log(randomIMG);
             break;
