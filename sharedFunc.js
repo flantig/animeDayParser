@@ -311,5 +311,25 @@ module.exports = {
         );
         return curPage;
     },
+    infoEmbeded: async (msg, pages, emoji = "➕", timeout = 120000) => {
+        if (!msg && !msg.channel) throw new Error('Channel is inaccessible.');
+        if (!pages) throw new Error('Pages are not given.');
+        if (emoji === "") throw new Error('Need two emojis.');
+        let page = 0;
+        const curPage = await msg.channel.send(pages[page].setFooter(`Click on the ➕ emoji for more info!`));
+        await curPage.react(emoji);
+        const collector = curPage.createReactionCollector(
+            (reaction, user) => emoji && !user.bot,
+            {time: timeout}
+        );
+        collector.on('collect', reaction => {
+           if(reaction.emoji.name === "➕"){
+               page++
+           }
+            curPage.edit(pages[page])
+        });
+
+        return curPage;
+    },
 }
 ;
