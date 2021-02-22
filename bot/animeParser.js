@@ -94,9 +94,10 @@ client.on('message', async msg => {
             //     break;
             // } else {
             let posts = await s3fun.getImageSet(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
+            let date = DateTime.local().toLocaleString({month: 'long', day: '2-digit'})
             var randomIMG = posts[Math.floor(Math.random() * posts.length)];
 
-            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG)));
+            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, date)));
 
             console.log(randomIMG);
             break;
@@ -122,8 +123,12 @@ client.on('message', async msg => {
                 month: 'short',
                 day: '2-digit'
             }));
+            let date = DateTime.local().minus({days: 1}).toLocaleString({
+                month: 'long',
+                day: '2-digit'
+            })
             var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
-            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG)));
+            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, date)));
 
             console.log(randomIMG);
             break;
@@ -157,12 +162,9 @@ const urlArrToEmbedArr = async (posts) => {
 };
 
 
-const possibleMSGs = async (object) => {
+const possibleMSGs = async (object, date) => {
     let post = []
-    const today = DateTime.local().toLocaleString({
-        month: 'long',
-        day: '2-digit'
-    });
+
     let genre, medium;
     if (object.genre.length > 0) {
         genre = object.genre.join(" , ")
@@ -178,8 +180,8 @@ const possibleMSGs = async (object) => {
 
 
     const body = `**Genre:** ${genre} \n **Rating:** ${object.score} \n **${medium[0]}:** ${object[medium[1]]}`
-    post.push(new Discord.MessageEmbed().setTitle(`**${today}**`).setImage(object.url).setDescription(`**${object.title}**`))
-    post.push(new Discord.MessageEmbed().setTitle(`**${today}**`).setImage(object.url).setDescription(`**${object.title}**`).addField("**--Synopsis--**", `||${object.description}||`).addField("**--Info--**", `${body}`))
+    post.push(new Discord.MessageEmbed().setTitle(`**${date}**`).setImage(object.url).setDescription(`**${object.title}**`))
+    post.push(new Discord.MessageEmbed().setTitle(`**${date}**`).setImage(object.url).setDescription(`**${object.title}**`).addField("**--Synopsis--**", `||${object.description}||`).addField("**--Info--**", `${body}`))
     return post
 };
 
