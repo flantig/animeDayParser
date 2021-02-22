@@ -266,6 +266,7 @@ module.exports = {
         await mongoClient.connect();
         const day = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").find({ "day" : dayToBeSearched}).toArray();
         mongoClient.logout();
+        console.log(day);
         return day;
     },
     /**

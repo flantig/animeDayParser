@@ -12,6 +12,15 @@ module.exports = {
             console.log(e);
         }
     },
+    specific: async (day) => {
+        try {
+            let posts = await s3fun.getImageSet(day);
+            console.log(posts);
+            return JSON.stringify(posts);
+        } catch(e) {
+            console.log(e);
+        }
+    },
     defaultPage: async () => {
         return JSON.stringify({
             devs: {Anthony: "An🗡nee#0777", Franky: "Tangy Salmon#7457"},
