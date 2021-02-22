@@ -1,20 +1,15 @@
 const http = require("http");
 // const host = 'animetodayme.me';
 const port = 8000;
-const {today, todayAll, defaultPage} = require("./routes");
-const sharedFunc = require("../sharedFunc");
+const {test, today, todayAll, defaultPage} = require("./routes");
+const {specificMongoDay} = require("../sharedFunc");
 
 const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
-    let subReddit = await sharedFunc.getSubredditReference("AnimeCalendar");
     switch (req.url) {
         case "/today":
             res.writeHead(200);
-            res.end(await today(subReddit));
-            break;
-        case "/todayAll":
-            res.writeHead(200);
-            res.end(await todayAll(subReddit));
+            res.end(await today());
             break;
         case req.url.includes("/specific"):
             const day = req.url.split("/specific/");
