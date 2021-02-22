@@ -5,6 +5,7 @@ const {DateTime} = require("luxon");
 const port = 8000;
 const {test, today, todayAll, defaultPage} = require("./routes");
 const {specificMongoDay} = require("../sharedFunc");
+const {getImageSet} = require("../s3functions");
 
 const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
@@ -22,7 +23,7 @@ const requestListener = async function (req, res) {
             const date = month + " " + day;
             console.log(date);
             res.writeHead(200);
-            res.end(JSON.stringify(await specificMongoDay(date)));
+            res.end(JSON.stringify(await getImageSet(date)));
             break;
         default:
             res.writeHead(200);
