@@ -23,7 +23,7 @@ const requestListener = async function (req, res) {
             const date = month + " " + day;
             console.log(date);
             res.writeHead(200);
-            res.end(JSON.stringify(await getImageSet(date)));
+            res.end(await getImageSet(date).toString());
             break;
         default:
             res.writeHead(200);
