@@ -336,5 +336,29 @@ module.exports = {
         );
         return curPage;
     },
+    channelEmbeded: async (channel, pages, emoji = "➕", timeout = 120000) => {
+        if (!channel) throw new Error('Channel is inaccessible.');
+        if (!pages) throw new Error('Pages are not given.');
+        if (emoji === "") throw new Error('Need two emojis.');
+        let page = 0;
+        const curPage = await channel.send(pages[page].setFooter(`Click on the ➕ emoji for more info!`));
+        await curPage.react(emoji);
+        const collector = curPage.createReactionCollector(
+            (reaction, user) => emoji && !user.bot,
+            {time: timeout}
+        );
+        collector.on('collect', reaction => {
+           if(reaction.emoji.name === "➕"){
+               page++
+           }
+            curPage.edit(pages[page])
+        });
+        collector.on('end', function () {
+                curPage.reactions.removeAll();
+                curPage.edit(pages[page].setFooter("Emoji listener Timed-out! Re-search to expand the anime info."));
+            }
+        );
+        return curPage;
+    },
 }
 ;

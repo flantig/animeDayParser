@@ -5,7 +5,7 @@ const util = require('util')
 const sharedFunc = require("../sharedFunc");
 const s3fun = require("../s3functions");
 const fs = require('fs');
-const { imageHash }= require('image-hash');
+const {imageHash} = require('image-hash');
 const imageH = util.promisify(imageHash);
 const leven = require('leven');
 const {DateTime} = require("luxon");
@@ -50,9 +50,9 @@ function sleep(ms) {
 client.on('ready', async x => {
     console.log("i'm lit on " + client.guilds.cache.size + " servers.");
 
-    cron.schedule('20 00 * * *', async function () {
+    cron.schedule('10 00 * * *', async function () {
         let day = DateTime.local().toLocaleString({month: 'short', day: '2-digit'});
-        let posts = await sharedFunc.specificMongoDay(day);
+        let posts = await s3fun.getImageSet(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
         var randomIMG = posts[Math.floor(Math.random() * posts.length)];
         let dailyGuildArray = await sharedFunc.dailyMongoSender();
 
@@ -60,7 +60,8 @@ client.on('ready', async x => {
             let guild = client.guilds.fetch(element.guildID);
             let channel = (await guild).channels.cache.find(channel => channel.id === element.channelID);
 
-            channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG)));
+
+            channel.send(await sharedFunc.channelEmbeded(channel, await possibleMSGs(randomIMG)));
         }
     });
 
@@ -84,18 +85,6 @@ client.on('ready', async x => {
 client.on('message', async msg => {
     switch (msg.content) {
         case config.prefix + "today":
-            //Likely never going to use the subreddit for daily images
-            // let post = await sharedFunc.getImgUrl(subreddit, false);
-            // if (post.url != null) {
-            //     const embed = new Discord.MessageEmbed()
-            //         .setTitle(DateTime.local().toLocaleString({
-            //             month: 'long',
-            //             day: '2-digit'
-            //         }))
-            //         .setImage(post.url)
-            //     msg.channel.send(embed);
-            //     break;
-            // } else {
             let posts = await s3fun.getImageSet(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
             var randomIMG = posts[Math.floor(Math.random() * posts.length)];
 
@@ -103,23 +92,10 @@ client.on('message', async msg => {
 
             console.log(randomIMG);
             break;
-        //    }
-
-        //Anthony's code doesn't work, I'll vault this for now
         // case config.prefix + "todayAll":
-        //     let posts = await sharedFunc.getImgUrl(subreddit, true);
-        //     let postsG = await sharedFunc.getGoogle(DateTime.local().toLocaleString({
-        //         month: 'short',
-        //         day: '2-digit'
-        //     }));
-        //     if (posts.url != null) {
-        //         msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(posts)));
-        //         break;
-        //     } else {
-        //         msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postsG)));
-        //         break;
-        //     }
-
+        //     let postss3 = await s3fun.getImageSet(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
+        //     msg.channel.send(await sharedFunc.paginationEmbed(msg, await urlArrToEmbedArr(postss3)));
+        //     break;
         case config.prefix + "yesterday":
             let yposts = await s3fun.getImageSet(DateTime.local().minus({days: 1}).toLocaleString({
                 month: 'short',
@@ -173,7 +149,7 @@ const possibleMSGs = async (object) => {
         genre = "Unavailable";
     }
 
-    if("episodes" in object){
+    if ("episodes" in object) {
         medium = ["Episodes", "episodes"]
     } else {
         medium = ["Chapters", "chapters"]
