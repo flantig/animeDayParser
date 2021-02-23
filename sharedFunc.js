@@ -329,7 +329,11 @@ module.exports = {
            }
             curPage.edit(pages[page])
         });
-
+        collector.on('end', function () {
+                curPage.reactions.removeAll();
+                curPage.edit(pages[page].setFooter("Emoji listener Timed-out! Re-search to expand the anime info."));
+            }
+        );
         return curPage;
     },
 }
