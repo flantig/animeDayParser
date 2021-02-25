@@ -37,7 +37,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
+let taco = "asd"
 /**
  * Client listener that runs exactly one (1) time when the bot first starts. Anything that needs to be ran to set up
  * bot functionality should be run in this function. Currently it is used to signal in console that the bot has started
@@ -88,7 +88,7 @@ client.on('message', async msg => {
             let posts = await s3fun.getImageSet(DateTime.local().toLocaleString({month: 'short', day: '2-digit'}));
             var randomIMG = posts[Math.floor(Math.random() * posts.length)];
 
-            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG)));
+            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, DateTime.local())));
 
             console.log(randomIMG);
             break;
@@ -102,7 +102,7 @@ client.on('message', async msg => {
                 day: '2-digit'
             }));
             var randomIMG = yposts[Math.floor(Math.random() * yposts.length)];
-            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG)));
+            msg.channel.send(await sharedFunc.infoEmbeded(msg, await possibleMSGs(randomIMG, DateTime.local().minus({days: 1}))));
 
             console.log(randomIMG);
             break;
@@ -136,9 +136,9 @@ const urlArrToEmbedArr = async (posts) => {
 };
 
 
-const possibleMSGs = async (object) => {
+const possibleMSGs = async (object, day) => {
     let post = []
-    const today = DateTime.local().toLocaleString({
+    const today = day.toLocaleString({
         month: 'long',
         day: '2-digit'
     });
