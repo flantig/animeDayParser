@@ -61,7 +61,7 @@ client.on('ready', async x => {
             let channel = (await guild).channels.cache.find(channel => channel.id === element.channelID);
 
 
-            channel.send(await sharedFunc.channelEmbeded(channel, await possibleMSGs(randomIMG)));
+            channel.send(await sharedFunc.channelEmbeded(channel, await possibleMSGs(randomIMG, DateTime.local())));
         }
     });
 
