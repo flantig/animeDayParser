@@ -9,6 +9,7 @@ const {getImageSet} = require("../s3functions");
 
 const requestListener = async function (req, res) {
     res.setHeader("Content-Type", "application/json");
+    res.setHeader("Access-Control-Allow-Origin", "*");
     console.log(req.url)
     switch (req.url.split("?")[0]) {
         case "/today":
