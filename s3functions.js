@@ -27,7 +27,7 @@ module.exports = {
 
         const s3Params = {
             Bucket: 'aniday',
-            Key: `Months/${month}/${day}/${filename}`,
+            Key: `MonthHybrid/${month}/${day}/${filename}`,
             Body: image.data,
             ACL: 'public-read',
         };
@@ -41,12 +41,9 @@ module.exports = {
             }
         });
 
-        const dayImgs = await mongoClient.db("aniDayStorage").collection("aniDayS3").updateOne(
-            {Month: month},
-            {$push: { [day]: object}}
-        )
+        const dayImg = await mongoClient.db("aniDayStorage").collection("aniDayHybrid").replaceOne({"url": object.url}, object, {upsert: true});
 
-        mongoClient.logout();
+        await mongoClient.logout();
     },
     /**
      *
@@ -56,14 +53,11 @@ module.exports = {
      */
     getImageSet: async (day) => {
         await mongoClient.connect();
-        const dayImgs = await mongoClient.db("aniDayStorage").collection("aniDayS3").find().project({
-            '_id': 0,
-            [day]: 1
-        }).toArray();
-        const filtered = dayImgs.filter(value => JSON.stringify(value) !== '{}')
+        const dayImgs = await mongoClient.db("aniDayStorage").collection("aniDayHybrid").find({ "day" : day}).toArray();
+
         mongoClient.logout();
 
-        return filtered[0][day]
+        return dayImgs
     },
     getAxios: async (UTCStringStart, UTCStringEnd) => {
         let collecPosts = [];
@@ -116,13 +110,25 @@ module.exports = {
                 if (comment.commentBody.includes("{") && !comment.commentBody.includes("http")) {
                     let regExp = /\{([^)]+)\}/;
                     let extracted = regExp.exec(comment.commentBody)
-                    title.title = extracted[1]
+                    try {
+                        title.title = extracted[1]
+                    } catch{
+                        title.title = "Unknown"
+                        title.medium = "Unknown"
+                        break;
+                    }
                     title.medium = "anime"
                     break;
                 } else if (comment.commentBody.includes("<") && !comment.commentBody.includes("http")) {
                     let regExp = /\<([^)]+)\>/;
                     let extracted = regExp.exec(comment.commentBody)
-                    title.title = extracted[1]
+                    try {
+                        title.title = extracted[1]
+                    } catch{
+                        title.title = "Unknown"
+                        title.medium = "Unknown"
+                        break;
+                    }
                     title.medium = "manga"
                     break;
                 } else {
