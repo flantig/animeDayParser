@@ -221,7 +221,7 @@ async function newUploader(dayi) {
         if (downloadYesOrNo) {
             const who = await s3fun.getComments(post.threadID)
 
-            if (who.medium = "Unknown") {
+            if (who.medium === "Unknown") {
                 try {
                     console.log("Attempting trace.moe...")
                     const file = currentImage.match(/[\w-]+\.(jpg|png|txt)/g).join()
@@ -260,7 +260,7 @@ async function newUploader(dayi) {
                     await s3fun.uploadPicture(currentImage, dayi.toLocaleString({month: 'long'}), day, file, newEntry)
                     console.log("Uploaded something!")
                 }
-            } else if (who.medium = "anime") {
+            } else if (who.medium === "anime") {
                 try {
                     const search = await Anilist.search('anime', who.title)
                     const anime = await Anilist.media.anime(search.media[0].id)
@@ -285,7 +285,7 @@ async function newUploader(dayi) {
                 } catch (e) {
                     console.log(e)
                 }
-            } else if (who.medium = "manga") {
+            } else if (who.medium === "manga") {
                 try {
                     const filter = {}
                     const search = await Anilist.searchEntry.manga(who.title, filter)
