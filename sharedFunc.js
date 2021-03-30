@@ -4,6 +4,9 @@ const {DateTime} = require("luxon");
 const axios = require('axios').default;
 const {google} = require('googleapis');
 const credentials = require('./googleAPI/credentials.json');
+const {MongoClient} = require('mongodb');
+const deepai = require('deepai');
+const fs = require('fs');
 
 const scopes = [
     'https://www.googleapis.com/auth/drive'
@@ -12,6 +15,9 @@ const auth = new google.auth.JWT(
     credentials.client_email, null,
     credentials.private_key, scopes
 );
+
+const uri = `mongodb+srv://TangySalmon:${credentials.mongoPW}@discordguildholder.pk6r8.mongodb.net/${credentials.mongoDB}?retryWrites=true&w=majority`
+const mongoClient = new MongoClient(uri);
 const drive = google.drive({version: "v3", auth});
 
 module.exports = {
@@ -101,7 +107,8 @@ module.exports = {
                         "options": {
                             "url": current.url,
                             "dest": `C:/Users/Home/Desktop/Months/${DateTime.fromSeconds(current.created_utc).toLocaleString({month: 'long'})}/${formatted}/`
-                        }
+                        },
+                        "threadID": current.id
                     })
                 }
             }
@@ -115,6 +122,27 @@ module.exports = {
         //console.log("debug check")
         return collecPosts;
 
+    },
+    getComments: async (id) => {
+        const post = await axios.get(`https://api.pushshift.io/reddit/comment/search/?link_id=${id}&limit=20`);
+        let collecPosts = [];
+
+        try {
+            for (let i = 0; i < post.data.data.length; i++) {
+                let current = post.data.data[i];
+                collecPosts.push({
+                    "commentBody": current.body
+                });
+
+            }
+        } catch (err) {
+            console.error("Something's amiss...");
+            console.error(err);
+            console.error("===================================================================================================");
+            console.error("===================================================================================================");
+        }
+
+        return collecPosts;
     },
 
     /**
@@ -155,14 +183,91 @@ module.exports = {
 
         })
 
+
         let collecPosts = [];
         for (let i = 0; i < dayFiles.data.files.length; i++) {
-            collecPosts.push({title: monthDay, url: dayFiles.data.files[i].webContentLink.slice(0, -16)});
+            collecPosts.push({
+                title: monthDay,
+                url: dayFiles.data.files[i].webContentLink.slice(0, -16),
+                id: dayFiles.data.files[i].id
+            });
         }
 
 
         return collecPosts;
 
+    },
+
+    downloadGoogle: async (fileID) => {
+        return new Promise((resolve, reject) => {
+            drive.files.get({fileId: fileID, alt: 'media'}, {responseType: "arraybuffer"},
+                function (err, {data}) {
+                    fs.writeFile("../images/options2.jpg", Buffer.from(data), err => {
+                        if (err) {
+                            console.log(err);
+                            return reject(err);
+                        }
+
+                        return resolve('file saved.')
+                    });
+                }
+            );
+        });
+    },
+    /**
+     * The intent for the following function will be to either add or replace where the bot posts daily images in the discord. The user should also be able to turn it off
+     * completely if they don't want to see Aniday posts anymore.
+     *
+     *
+     * @sendMongoEntry: Will replace a current entry if it exists, if it doesn't exist it'll use upsert to add a new entry for daily AniDay posts.
+     *
+     * @removeMongoEntry: Will check to see if we even have an entry for AniDay in the current guild the message is being sent. If there is an entry, we remove it.
+     * If there isn't an entry, we send some feedback to the user telling them that there isn't anything to remove.
+     *
+     * @dailyMongoSender: After the 24 hour interval, the bot will go through all of the guilds currently subscribed to AniDay daily posts and posts that day's random image.
+     */
+    sendMongoEntry: async (guildID, guildCurrentChannel) => {
+        await mongoClient.connect();
+        let result;
+
+        result = await mongoClient.db("aniDayStorage").collection("dailyImage").replaceOne({"guildID": guildID}, {
+            "guildID": guildID,
+            "channelID": guildCurrentChannel
+        }, {upsert: true});
+
+        mongoClient.logout();
+        return result.guildID;
+    },
+    removeMongoEntry: async (guildID) => {
+        await mongoClient.connect();
+        let botFeedback;
+        const currentListLength = await mongoClient.db("aniDayStorage").collection("dailyImage").findOne({"guildID": guildID});
+        if (currentListLength != null) {
+            result = await mongoClient.db("aniDayStorage").collection("dailyImage").removeOne({"guildID": guildID});
+            botFeedback = "We successfully removed AniDay posts!"
+        } else {
+            botFeedback = "This server was never receiving AniDay posts..."
+        }
+        mongoClient.logout();
+        return botFeedback;
+    },
+    dailyMongoSender: async () => {
+        await mongoClient.connect();
+        const daily = await mongoClient.db("aniDayStorage").collection("dailyImage").find({}, {
+            "guildID": 1,
+            "channelID": 1,
+            "_id": 0
+        }).toArray();
+        mongoClient.logout();
+        return daily;
+
+    },
+    specificMongoDay: async (dayToBeSearched) => {
+        await mongoClient.connect();
+        const day = await mongoClient.db("aniDayStorage").collection("aniDayEndpoint").find({ "day" : dayToBeSearched}).toArray();
+        mongoClient.logout();
+        console.log(day);
+        return day;
     },
     /**
      * This function takes in an array of discord embeds and displays them through dynamic pagination. This is done
@@ -207,4 +312,53 @@ module.exports = {
         );
         return curPage;
     },
-};
+    infoEmbeded: async (msg, pages, emoji = "➕", timeout = 120000) => {
+        if (!msg && !msg.channel) throw new Error('Channel is inaccessible.');
+        if (!pages) throw new Error('Pages are not given.');
+        if (emoji === "") throw new Error('Need two emojis.');
+        let page = 0;
+        const curPage = await msg.channel.send(pages[page].setFooter(`Click on the ➕ emoji for more info!`));
+        await curPage.react(emoji);
+        const collector = curPage.createReactionCollector(
+            (reaction, user) => emoji && !user.bot,
+            {time: timeout}
+        );
+        collector.on('collect', reaction => {
+           if(reaction.emoji.name === "➕"){
+               page++
+           }
+            curPage.edit(pages[page])
+        });
+        collector.on('end', function () {
+                curPage.reactions.removeAll();
+                curPage.edit(pages[page].setFooter("Emoji listener Timed-out! Re-search to expand the anime info."));
+            }
+        );
+        return curPage;
+    },
+    channelEmbeded: async (channel, pages, emoji = "➕", timeout = 120000) => {
+        if (!channel) throw new Error('Channel is inaccessible.');
+        if (!pages) throw new Error('Pages are not given.');
+        if (emoji === "") throw new Error('Need two emojis.');
+        let page = 0;
+        const curPage = await channel.send(pages[page].setFooter(`Click on the ➕ emoji for more info!`));
+        await curPage.react(emoji);
+        const collector = curPage.createReactionCollector(
+            (reaction, user) => emoji && !user.bot,
+            {time: timeout}
+        );
+        collector.on('collect', reaction => {
+           if(reaction.emoji.name === "➕"){
+               page++
+           }
+            curPage.edit(pages[page])
+        });
+        collector.on('end', function () {
+                curPage.reactions.removeAll();
+                curPage.edit(pages[page].setFooter("Emoji listener Timed-out! Re-search to expand the anime info."));
+            }
+        );
+        return curPage;
+    },
+}
+;

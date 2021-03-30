@@ -48,7 +48,10 @@ You can invite this discord bot to your server [here](https://discord.com/api/oa
 
 This command will display only one (1) post. 
 
-> \>todayAll 
+> \>daily
 
-This command will display every post that is for the current day in a paginated embed. \
-Click the reactions on the bottom to scroll through the posts.
+This command will post one randomized post every 24 hours. Use this command in the text \
+channel you'd like it to post daily.
+
+
+> \>daily off
