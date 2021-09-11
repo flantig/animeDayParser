@@ -143,7 +143,8 @@ const possibleMSGs = async (object, day) => {
         day: '2-digit'
     });
     let genre, medium;
-    if (object.genre.length > 0) {
+    console.log(object)
+    if (object.genre.length > 1) {
         genre = object.genre.join(" , ")
     } else {
         genre = "Unavailable";
@@ -254,7 +255,7 @@ console.log("Starting checker...")
                         "title": 'Unknown',
                         "description": 'Unknown',
                         "score": 'Unknown',
-                        "genre": 'Unknown',
+                        "genre": ['Unknown'],
                         "chapters": 'Unknown',
                         "hash": hasher,
                         "method": "fallback"
@@ -323,7 +324,7 @@ console.log("Starting checker...")
                     "title": 'Unknown',
                     "description": 'Unknown',
                     "score": 'Unknown',
-                    "genre": 'Unknown',
+                    "genre": ['Unknown'],
                     "chapters": 'Unknown',
                     "hash": hasher
                 }
