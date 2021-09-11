@@ -1,5 +1,5 @@
 # Anime Day Parser
-It is a bot that shitposts the day of the month with anime pictures, and a webserver for anyone to grab those shitposts for themselves.
+It is a bot that posts the day of the month with anime pictures, and a webserver for anyone to grab those posts for themselves.
 
 ## The Web Server
 You can find the webserver [here](http://www.animetodayme.me), if your browser flags this as a malicious site don't worry, we don't want your credit card info. \
@@ -48,11 +48,6 @@ You can invite this discord bot to your server [here](https://discord.com/api/oa
 
 This command will display only one (1) post. 
 
-> \>todayAll 
-
-This command will display every post that is for the current day in a paginated embed. \
-Click the reactions on the bottom to scroll through the posts.
-
 > \>daily
 
 This command will post one randomized post every 24 hours. Use this command in the text \
@@ -60,5 +55,3 @@ channel you'd like it to post daily.
 
 
 > \>daily off
-
-This command checks if the server is set for automated posts. If it is, we turn it off. If it isn't, we tell the user that it wasn't set
