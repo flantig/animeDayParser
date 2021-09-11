@@ -47,6 +47,7 @@ let taco = "asd"
  *
  * @setInterval: After 24 hours, the bot will reach out to MongoDB and ask what servers it should be sending a daily AniDay image too
  */
+
 client.on('ready', async x => {
     console.log("i'm lit on " + client.guilds.cache.size + " servers.");
 
@@ -64,11 +65,10 @@ client.on('ready', async x => {
             channel.send(await sharedFunc.channelEmbeded(channel, await possibleMSGs(randomIMG, DateTime.local())));
         }
     });
-
-
-    cron.schedule('00 20 * * *', async function () {
-        newUploader(DateTime.local())
-    });
+    // newUploader(DateTime.local().minus({day: 1}))
+    // cron.schedule('00 20 * * *', async function () {
+    //     newUploader(DateTime.local())
+    // });
 
     subreddit = await sharedFunc.getSubredditReference("AnimeCalendar");
 });
@@ -182,7 +182,7 @@ async function newUploader(dayi) {
     // await api.agent.cacheLogin("./cache.txt","flantig", "P!n%5ck+*C#!RcL", true);
     // let data = (await mySauce(`https://i.pinimg.com/474x/77/d5/86/77d586995c000bde81e50510f7c0b9cc.jpg`)).json;
     const Anilist = new anilist();
-
+console.log("Starting checker...")
     // const chapter = await Anilist.search('manga', data.results[0].data.source)
     // const manga = await Anilist.media.manga(chapter.media[0].id)
     // console.log(manga)
@@ -195,6 +195,8 @@ async function newUploader(dayi) {
     const s3Set = await s3fun.getImageSet(day)
     let hasher, hasher2;
     let currentImage = ""
+    console.log(redditImages)
+    console.log(s3Set)
     for (let post of redditImages) {
         currentImage = post.options.url;
         try {
